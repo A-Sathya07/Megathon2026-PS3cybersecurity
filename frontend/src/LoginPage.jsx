@@ -45,19 +45,31 @@ export default function LoginPage({ onLogin }) {
           role: role,
         }),
       });
+    const data = await response.json();
 
-      const data = await response.json();
+    console.log("LOGIN STATUS:", response.status);
+    console.log("LOGIN RESPONSE:", data);
 
-      if (!response.ok) {
-        setError(data.error || "Invalid login or role.");
-        return;
-      }
+    if (!response.ok) {
+      setError(data.error || "Invalid login or role.");
+      return;
+    }
 
-      // IMPORTANT:
-      // Use the role returned by the BACKEND,
-      // not the role selected by the user.
-      onLogin(data);
+    if (!data.access_token) {
+      console.error("NO ACCESS TOKEN:", data);
+      setError("Login succeeded but server did not return a token.");
+      return;
+    }
 
+    sessionStorage.setItem("access_token", data.access_token);
+    sessionStorage.setItem("user", JSON.stringify(data.user));
+
+    console.log(
+      "TOKEN STORED:",
+      sessionStorage.getItem("access_token")
+    );
+
+    onLogin(data);
     } catch (err) {
       console.error(err);
       setError("Unable to connect to the server.");
@@ -72,15 +84,12 @@ export default function LoginPage({ onLogin }) {
       style={{ fontFamily: "Inter, sans-serif" }}
     >
       <div className="w-full max-w-sm">
-
         <div className="flex flex-col items-center mb-6">
           <div className="w-11 h-11 rounded-xl bg-blue-600 flex items-center justify-center mb-3">
             <Shield size={22} className="text-white" />
           </div>
 
-          <h1 className="text-lg font-semibold text-slate-900">
-            RAGShield
-          </h1>
+          <h1 className="text-lg font-semibold text-slate-900">RAGShield</h1>
 
           <p className="text-xs text-slate-500 mt-1">
             Secure RAG for a Safer Tomorrow
@@ -88,7 +97,6 @@ export default function LoginPage({ onLogin }) {
         </div>
 
         <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-6">
-
           {/* ROLE SELECTION */}
 
           <div className="grid grid-cols-2 gap-1 bg-slate-100 rounded-lg p-1 mb-5">
@@ -118,7 +126,6 @@ export default function LoginPage({ onLogin }) {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-
             {/* EMAIL */}
 
             <div>
@@ -134,9 +141,7 @@ export default function LoginPage({ onLogin }) {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder={
-                    role === "admin"
-                      ? "admin@acme.com"
-                      : "john@acme.com"
+                    role === "admin" ? "admin@acme.com" : "john@acme.com"
                   }
                   className="flex-1 text-sm text-slate-800 focus:outline-none"
                 />
@@ -166,11 +171,7 @@ export default function LoginPage({ onLogin }) {
                   onClick={() => setShowPassword(!showPassword)}
                   className="text-slate-400"
                 >
-                  {showPassword ? (
-                    <EyeOff size={15} />
-                  ) : (
-                    <Eye size={15} />
-                  )}
+                  {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
                 </button>
               </div>
             </div>
@@ -194,7 +195,6 @@ export default function LoginPage({ onLogin }) {
                 ? "Checking..."
                 : `Sign in as ${role === "admin" ? "Admin" : "User"}`}
             </button>
-
           </form>
         </div>
       </div>

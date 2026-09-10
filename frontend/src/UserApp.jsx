@@ -332,7 +332,11 @@ function Sidebar({
             </p>
           </div>
           <button
-            onClick={onLogout}
+            onClick={() => {
+              sessionStorage.removeItem("access_token");
+              sessionStorage.removeItem("user");
+              onLogout();
+            }}
             title="Sign out"
             className="ml-auto text-slate-400 hover:text-red-600 flex-shrink-0"
           >
@@ -751,9 +755,7 @@ function UploadModal({ onClose }) {
                     : "Click to select a document"}
                 </p>
 
-                <p className="text-xs text-slate-400 mt-1">
-                  Supported: PDF
-                </p>
+                <p className="text-xs text-slate-400 mt-1">Supported: PDF</p>
               </label>
 
               {error && <p className="text-xs text-red-600">{error}</p>}
@@ -816,113 +818,90 @@ function UploadModal({ onClose }) {
           )}
 
           {stage === "result" && result?.status === "safe" && (
-  <div className="mt-6 rounded-lg border border-gray-300 bg-white p-5">
+            <div className="mt-6 rounded-lg border border-gray-300 bg-white p-5">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Document Safe
+              </h3>
 
-    <h3 className="text-lg font-semibold text-gray-900">
-      Document Safe
-    </h3>
+              <p className="mt-1 text-sm text-gray-600">{result.filename}</p>
 
-    <p className="mt-1 text-sm text-gray-600">
-      {result.filename}
-    </p>
+              <div className="mt-4 border-t border-gray-200 pt-4">
+                <p className="text-sm font-medium text-green-600">
+                  Security Scan Passed
+                </p>
 
-    <div className="mt-4 border-t border-gray-200 pt-4">
-      <p className="text-sm font-medium text-green-600">
-        Security Scan Passed
-      </p>
+                <p className="mt-1 text-sm text-gray-600">
+                  No ingestion vulnerabilities were detected.
+                </p>
+              </div>
+            </div>
+          )}
 
-      <p className="mt-1 text-sm text-gray-600">
-        No ingestion vulnerabilities were detected.
-      </p>
-    </div>
-
-  </div>
-)}
-
-         {stage === "result" && result?.status === "error" && (
-  <div className="mt-6 rounded-lg border border-gray-300 bg-white p-5">
-    <h3 className="text-lg font-semibold text-gray-900">
-      Upload Failed
-    </h3>
-    <p className="mt-2 text-sm text-gray-600">
-      {result.message}
-    </p>
-  </div>
-)}
+          {stage === "result" && result?.status === "error" && (
+            <div className="mt-6 rounded-lg border border-gray-300 bg-white p-5">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Upload Failed
+              </h3>
+              <p className="mt-2 text-sm text-gray-600">{result.message}</p>
+            </div>
+          )}
 
           {stage === "result" && result?.status === "quarantined" && (
-  <div className="mt-6 rounded-lg border border-gray-300 bg-white p-5">
+            <div className="mt-6 rounded-lg border border-gray-300 bg-white p-5">
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Document Quarantined
+                </h3>
 
-    <div className="mb-4">
-      <h3 className="text-lg font-semibold text-gray-900">
-        Document Quarantined
-      </h3>
+                <p className="mt-1 text-sm text-gray-600">{result.filename}</p>
+              </div>
 
-      <p className="mt-1 text-sm text-gray-600">
-        {result.filename}
-      </p>
-    </div>
+              <div className="mb-4 flex justify-between border-b border-gray-200 pb-3">
+                <span className="text-sm text-gray-700">Threat Score</span>
 
-    <div className="mb-4 flex justify-between border-b border-gray-200 pb-3">
-      <span className="text-sm text-gray-700">
-        Threat Score
-      </span>
+                <span className="text-sm font-semibold text-red-600">
+                  {Number(result.threatScore).toFixed(2)}
+                </span>
+              </div>
 
-      <span className="text-sm font-semibold text-red-600">
-        {Number(result.threatScore).toFixed(2)}
-      </span>
-    </div>
+              <p className="mb-3 text-sm font-semibold text-gray-900">
+                Threats Detected
+              </p>
 
-    <p className="mb-3 text-sm font-semibold text-gray-900">
-      Threats Detected
-    </p>
+              <div className="space-y-3">
+                {result.threats.map((threat, index) => (
+                  <div key={index} className="border-b border-gray-200 pb-3">
+                    <div className="flex justify-between">
+                      <span className="text-sm font-medium text-gray-900">
+                        {threat.threat_type
+                          .replace(/_/g, " ")
+                          .replace(/\b\w/g, (char) => char.toUpperCase())}
+                      </span>
 
-    <div className="space-y-3">
+                      <span className="text-xs text-gray-500">
+                        Page {threat.page_number}
+                      </span>
+                    </div>
 
-      {result.threats.map((threat, index) => (
-        <div
-          key={index}
-          className="border-b border-gray-200 pb-3"
-        >
+                    <p className="mt-1 text-sm text-gray-700">
+                      "{threat.matched_text}"
+                    </p>
+                  </div>
+                ))}
+              </div>
 
-          <div className="flex justify-between">
+              <div className="mt-4 border-t border-gray-200 pt-4">
+                <p className="text-sm font-medium text-red-600">
+                  Upload Blocked
+                </p>
 
-            <span className="text-sm font-medium text-gray-900">
-              {threat.threat_type
-                .replace(/_/g, " ")
-                .replace(/\b\w/g, char => char.toUpperCase())}
-            </span>
-
-            <span className="text-xs text-gray-500">
-              Page {threat.page_number}
-            </span>
-
-          </div>
-
-          <p className="mt-1 text-sm text-gray-700">
-            "{threat.matched_text}"
-          </p>
-
-        </div>
-      ))}
-
-    </div>
-
-    <div className="mt-4 border-t border-gray-200 pt-4">
-
-      <p className="text-sm font-medium text-red-600">
-        Upload Blocked
-      </p>
-
-      <p className="mt-1 text-sm text-gray-600">
-        This document was blocked before entering the RAG knowledge base.
-      </p>
-
-    </div>
-
-  </div>
-)}
-
+                <p className="mt-1 text-sm text-gray-600">
+                  This document was blocked before entering the RAG knowledge
+                  base.
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
