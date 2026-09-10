@@ -9,19 +9,15 @@ supabase = create_client(
     os.getenv("SUPABASE_KEY")
 )
 
-file_path = "../../demo/tenant_a/test.pdf"
 
-storage_path = "tenant-a/test.pdf"
-
-with open(file_path, "rb") as file:
+def upload_document(file, storage_path, content_type):
     result = supabase.storage.from_("documents").upload(
         storage_path,
         file,
         {
-            "content-type": "application/pdf",
-            "upsert": "true"
+            "content-type": content_type,
+            "upsert": "false"
         }
     )
 
-print("Upload successful")
-print(result)
+    return result

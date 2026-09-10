@@ -4,13 +4,29 @@ from config import Config, supabase
 from routes.auth import auth_bp
 from routes.chat import chat_bp
 
+<<<<<<< HEAD
 app = Flask(__name__)
 app.config.from_object(Config)   
 
 CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
 
 app.register_blueprint(chat_bp)
+=======
+from routes.auth import auth_bp
+from routes.documents import documents_bp
+
+app = Flask(__name__)
+app.config.from_object(Config)
+
+CORS(
+    app,
+    supports_credentials=True,
+    origins=["http://localhost:5173"]
+)
+
+>>>>>>> 627e6034a1dde04231e99a8dc9af1b4913d4abd3
 app.register_blueprint(auth_bp)
+app.register_blueprint(documents_bp)
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
