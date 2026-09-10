@@ -212,9 +212,6 @@ function Card({ title, action, children, className = "" }) {
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* Toast notifications                                                  */
-/* ------------------------------------------------------------------ */
 
 function ToastStack({ toasts }) {
   return (
@@ -233,10 +230,6 @@ function ToastStack({ toasts }) {
     </div>
   );
 }
-
-/* ------------------------------------------------------------------ */
-/* Generic modal                                                        */
-/* ------------------------------------------------------------------ */
 
 function Modal({ title, subtitle, onClose, children, widthClass = "max-w-2xl" }) {
   useEffect(() => {
@@ -266,9 +259,6 @@ function Modal({ title, subtitle, onClose, children, widthClass = "max-w-2xl" })
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* Sidebar                                                              */
-/* ------------------------------------------------------------------ */
 
 function Sidebar({ open, onClose, activeNav, onSelectNav }) {
   return (
@@ -445,9 +435,6 @@ function Header({ onMenuClick, activeNav, selectedOrg, onSelectOrg, addToast, on
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* Metric cards                                                        */
-/* ------------------------------------------------------------------ */
 
 function MetricCard({ label, value, sub, icon: Icon, tone }) {
   const t = toneClasses[tone];

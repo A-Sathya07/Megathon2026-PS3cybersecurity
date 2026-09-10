@@ -1,11 +1,12 @@
 from flask import Flask
 from flask_cors import CORS
-from config import Config, supabase
 
-from routes.auth import auth_bp
-from routes.documents import documents_bp
+from backend.config import Config, supabase
+from backend.routes.auth import auth_bp
+from backend.routes.documents import documents_bp
 
 app = Flask(__name__)
+
 app.config.from_object(Config)
 
 CORS(
@@ -15,7 +16,6 @@ CORS(
 )
 
 app.register_blueprint(auth_bp)
-app.register_blueprint(chat_bp)
 app.register_blueprint(documents_bp)
 
 if __name__ == "__main__":

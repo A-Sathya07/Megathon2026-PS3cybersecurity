@@ -1,9 +1,29 @@
 import React, { useState, useRef, useEffect } from "react";
 import {
-  Menu, X, Shield, ShieldCheck, LayoutDashboard, FolderOpen, MessageCircle,
-  Activity, Settings, Upload, FileText, CheckCircle2, AlertTriangle, Clock,
-  Send, Lock, Eye, Database, ScanLine, Fingerprint, Search as SearchIcon,
-  ShieldAlert, Bot, LogOut,
+  Menu,
+  X,
+  Shield,
+  ShieldCheck,
+  LayoutDashboard,
+  FolderOpen,
+  MessageCircle,
+  Activity,
+  Settings,
+  Upload,
+  FileText,
+  CheckCircle2,
+  AlertTriangle,
+  Clock,
+  Send,
+  Lock,
+  Eye,
+  Database,
+  ScanLine,
+  Fingerprint,
+  Search as SearchIcon,
+  ShieldAlert,
+  Bot,
+  LogOut,
 } from "lucide-react";
 
 // ---------------------------------------------------------------------------
@@ -11,10 +31,20 @@ import {
 // ---------------------------------------------------------------------------
 
 const METRICS = [
-  { label: "My Documents", value: "127", sub: "+12 this week", tone: "neutral" },
+  {
+    label: "My Documents",
+    value: "127",
+    sub: "+12 this week",
+    tone: "neutral",
+  },
   { label: "Safe Documents", value: "119", sub: "94% protected", tone: "safe" },
   { label: "Quarantined", value: "8", sub: "Requires review", tone: "warning" },
-  { label: "Security Blocks", value: "7", sub: "Threats prevented", tone: "blocked" },
+  {
+    label: "Security Blocks",
+    value: "7",
+    sub: "Threats prevented",
+    tone: "blocked",
+  },
 ];
 
 const SECURITY_LAYERS = [
@@ -26,34 +56,111 @@ const SECURITY_LAYERS = [
 ];
 
 const DOCUMENTS = [
-  { id: 1, name: "Employee Leave Policy.pdf", source: "HR Department", uploaded: "Today", status: "SAFE" },
-  { id: 2, name: "Security Guidelines.pdf", source: "Security Team", uploaded: "Yesterday", status: "SAFE" },
-  { id: 3, name: "Q3 Benefits Summary.pdf", source: "HR Department", uploaded: "2 days ago", status: "SAFE" },
-  { id: 4, name: "Unknown Policy.docx", source: "External Upload", uploaded: "Today", status: "QUARANTINED" },
-  { id: 5, name: "Malicious Instructions.pdf", source: "External Upload", uploaded: "Today", status: "BLOCKED" },
+  {
+    id: 1,
+    name: "Employee Leave Policy.pdf",
+    source: "HR Department",
+    uploaded: "Today",
+    status: "SAFE",
+  },
+  {
+    id: 2,
+    name: "Security Guidelines.pdf",
+    source: "Security Team",
+    uploaded: "Yesterday",
+    status: "SAFE",
+  },
+  {
+    id: 3,
+    name: "Q3 Benefits Summary.pdf",
+    source: "HR Department",
+    uploaded: "2 days ago",
+    status: "SAFE",
+  },
+  {
+    id: 4,
+    name: "Unknown Policy.docx",
+    source: "External Upload",
+    uploaded: "Today",
+    status: "QUARANTINED",
+  },
+  {
+    id: 5,
+    name: "Malicious Instructions.pdf",
+    source: "External Upload",
+    uploaded: "Today",
+    status: "BLOCKED",
+  },
 ];
 
 const SECURITY_EVENTS = [
   { time: "10:42 AM", event: "Document scanned", status: "SAFE" },
-  { time: "10:31 AM", event: "Unauthorized document request", status: "BLOCKED" },
-  { time: "09:54 AM", event: "Suspicious document detected", status: "QUARANTINED" },
+  {
+    time: "10:31 AM",
+    event: "Unauthorized document request",
+    status: "BLOCKED",
+  },
+  {
+    time: "09:54 AM",
+    event: "Suspicious document detected",
+    status: "QUARANTINED",
+  },
   { time: "09:10 AM", event: "Document scanned", status: "SAFE" },
 ];
 
 const ACTIVITY = [
-  { day: "Today", items: [
-    { time: "11:20 AM", title: "Asked RAGShield", detail: "\u201CWhat is our leave policy?\u201D", icon: MessageCircle },
-    { time: "11:05 AM", title: "Uploaded document", detail: "Employee Leave Policy.pdf", icon: Upload },
-    { time: "10:42 AM", title: "Document security scan completed", detail: "Employee Leave Policy.pdf \u2014 Safe", icon: ScanLine },
-    { time: "10:31 AM", title: "Security block triggered", detail: "Unauthorized document request", icon: ShieldAlert },
-  ]},
+  {
+    day: "Today",
+    items: [
+      {
+        time: "11:20 AM",
+        title: "Asked RAGShield",
+        detail: "\u201CWhat is our leave policy?\u201D",
+        icon: MessageCircle,
+      },
+      {
+        time: "11:05 AM",
+        title: "Uploaded document",
+        detail: "Employee Leave Policy.pdf",
+        icon: Upload,
+      },
+      {
+        time: "10:42 AM",
+        title: "Document security scan completed",
+        detail: "Employee Leave Policy.pdf \u2014 Safe",
+        icon: ScanLine,
+      },
+      {
+        time: "10:31 AM",
+        title: "Security block triggered",
+        detail: "Unauthorized document request",
+        icon: ShieldAlert,
+      },
+    ],
+  },
 ];
 
 const SECURITY_CARDS = [
-  { icon: Lock, title: "Secure Ingestion", desc: "Documents are scanned before entering the knowledge base." },
-  { icon: Database, title: "Tenant Isolation", desc: "Your organization can only access authorized documents." },
-  { icon: ShieldCheck, title: "Secure Retrieval", desc: "Unauthorized documents are blocked before retrieval." },
-  { icon: Eye, title: "Output Security", desc: "LLM responses are scanned before reaching the user." },
+  {
+    icon: Lock,
+    title: "Secure Ingestion",
+    desc: "Documents are scanned before entering the knowledge base.",
+  },
+  {
+    icon: Database,
+    title: "Tenant Isolation",
+    desc: "Your organization can only access authorized documents.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Secure Retrieval",
+    desc: "Unauthorized documents are blocked before retrieval.",
+  },
+  {
+    icon: Eye,
+    title: "Output Security",
+    desc: "LLM responses are scanned before reaching the user.",
+  },
 ];
 
 // Same shape/content style as the admin dashboard's assistant, scoped to the user's own documents.
@@ -65,19 +172,23 @@ const SUGGESTED_QUESTIONS = [
 
 const RAG_RESPONSES = {
   "what is the leave policy?": {
-    answer: "Employees should submit leave requests at least 7 days before the planned leave date.",
+    answer:
+      "Employees should submit leave requests at least 7 days before the planned leave date.",
     source: "Employee Leave Policy.pdf (p. 2)",
   },
   "what is our leave policy?": {
-    answer: "Employees should submit leave requests at least 7 days before the planned leave date.",
+    answer:
+      "Employees should submit leave requests at least 7 days before the planned leave date.",
     source: "Employee Leave Policy.pdf (p. 2)",
   },
   "what are the working hours?": {
-    answer: "Standard working hours are 9:30 AM to 6:30 PM, Monday through Friday, with a flexible one-hour window for start time.",
+    answer:
+      "Standard working hours are 9:30 AM to 6:30 PM, Monday through Friday, with a flexible one-hour window for start time.",
     source: "Employee Leave Policy.pdf (p. 5)",
   },
   "how do i apply for remote work?": {
-    answer: "Submit a remote work request through your manager at least 3 business days in advance, noting the dates and reason.",
+    answer:
+      "Submit a remote work request through your manager at least 3 business days in advance, noting the dates and reason.",
     source: "Security Guidelines.pdf (p. 4)",
   },
   "summarize our security policy": null, // triggers a blocked response, same as the admin demo
@@ -94,7 +205,9 @@ function StatusBadge({ status }) {
     BLOCKED: "bg-red-50 text-red-700 border-red-200",
   };
   return (
-    <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium border ${map[status]}`}>
+    <span
+      className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium border ${map[status]}`}
+    >
       {status === "SAFE" && <CheckCircle2 size={12} className="mr-1" />}
       {status === "QUARANTINED" && <AlertTriangle size={12} className="mr-1" />}
       {status === "BLOCKED" && <X size={12} className="mr-1" />}
@@ -104,19 +217,39 @@ function StatusBadge({ status }) {
 }
 
 function Dot({ color }) {
-  const map = { green: "bg-green-500", amber: "bg-amber-500", red: "bg-red-500", blue: "bg-blue-500" };
-  return <span className={`inline-block w-2 h-2 rounded-full ${map[color]} mr-2`} />;
+  const map = {
+    green: "bg-green-500",
+    amber: "bg-amber-500",
+    red: "bg-red-500",
+    blue: "bg-blue-500",
+  };
+  return (
+    <span className={`inline-block w-2 h-2 rounded-full ${map[color]} mr-2`} />
+  );
 }
 
 // ---------------------------------------------------------------------------
 // Sidebar
 // ---------------------------------------------------------------------------
 
-function Sidebar({ open, onClose, page, setPage, openAssistant, email, onLogout }) {
+function Sidebar({
+  open,
+  onClose,
+  page,
+  setPage,
+  openAssistant,
+  email,
+  onLogout,
+}) {
   const navItems = [
     { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
     { key: "documents", label: "My Documents", icon: FolderOpen },
-    { key: "ask", label: "Ask RAGShield", icon: MessageCircle, action: openAssistant },
+    {
+      key: "ask",
+      label: "Ask RAGShield",
+      icon: MessageCircle,
+      action: openAssistant,
+    },
     { key: "security", label: "Security", icon: Shield },
     { key: "activity", label: "Activity", icon: Activity },
     { key: "settings", label: "Settings", icon: Settings },
@@ -139,9 +272,13 @@ function Sidebar({ open, onClose, page, setPage, openAssistant, email, onLogout 
             <div className="w-8 h-8 rounded-md bg-blue-600 flex items-center justify-center">
               <Shield size={18} className="text-white" />
             </div>
-            <span className="font-semibold text-slate-900 text-lg tracking-tight">RAGShield</span>
+            <span className="font-semibold text-slate-900 text-lg tracking-tight">
+              RAGShield
+            </span>
           </div>
-          <p className="text-xs text-slate-500 mt-2">Secure RAG for a Safer Tomorrow</p>
+          <p className="text-xs text-slate-500 mt-2">
+            Secure RAG for a Safer Tomorrow
+          </p>
         </div>
 
         <nav className="flex-1 px-3 py-4 space-y-1">
@@ -152,12 +289,18 @@ function Sidebar({ open, onClose, page, setPage, openAssistant, email, onLogout 
               <button
                 key={item.key}
                 onClick={() => {
-                  if (item.action) { item.action(); onClose(); return; }
+                  if (item.action) {
+                    item.action();
+                    onClose();
+                    return;
+                  }
                   setPage(item.key);
                   onClose();
                 }}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                  active ? "bg-blue-50 text-blue-700" : "text-slate-600 hover:bg-slate-50"
+                  active
+                    ? "bg-blue-50 text-blue-700"
+                    : "text-slate-600 hover:bg-slate-50"
                 }`}
               >
                 <Icon size={17} />
@@ -171,7 +314,9 @@ function Sidebar({ open, onClose, page, setPage, openAssistant, email, onLogout 
           <div className="flex items-center text-sm font-medium text-green-700">
             <Dot color="green" /> Protection Active
           </div>
-          <p className="text-xs text-green-600 mt-1 ml-4">Your organization is protected</p>
+          <p className="text-xs text-green-600 mt-1 ml-4">
+            Your organization is protected
+          </p>
         </div>
 
         <div className="px-4 py-4 border-t border-slate-100 flex items-center gap-3">
@@ -179,8 +324,12 @@ function Sidebar({ open, onClose, page, setPage, openAssistant, email, onLogout 
             JD
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-medium text-slate-900 truncate">John Doe</p>
-            <p className="text-xs text-slate-500 truncate">{email || "john@acme.com"}</p>
+            <p className="text-sm font-medium text-slate-900 truncate">
+              John Doe
+            </p>
+            <p className="text-xs text-slate-500 truncate">
+              {email || "john@acme.com"}
+            </p>
           </div>
           <button
             onClick={onLogout}
@@ -211,8 +360,12 @@ function Header({ onMenuClick, title, subtitle }) {
           <Menu size={18} />
         </button>
         <div className="min-w-0">
-          <h1 className="text-lg font-semibold text-slate-900 truncate">{title}</h1>
-          {subtitle && <p className="text-sm text-slate-500 truncate">{subtitle}</p>}
+          <h1 className="text-lg font-semibold text-slate-900 truncate">
+            {title}
+          </h1>
+          {subtitle && (
+            <p className="text-sm text-slate-500 truncate">{subtitle}</p>
+          )}
         </div>
         <div className="ml-auto flex items-center gap-2 text-sm font-medium text-green-700 bg-green-50 border border-green-100 rounded-full px-3 py-1.5 flex-shrink-0">
           <Dot color="green" /> Protected
@@ -250,12 +403,19 @@ function SecurityStatusCard() {
   return (
     <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-sm font-semibold text-slate-900">Security Status</h2>
-        <span className="text-xs text-slate-400">Last security scan: 2 minutes ago</span>
+        <h2 className="text-sm font-semibold text-slate-900">
+          Security Status
+        </h2>
+        <span className="text-xs text-slate-400">
+          Last security scan: 2 minutes ago
+        </span>
       </div>
       <div className="space-y-3">
         {SECURITY_LAYERS.map((layer) => (
-          <div key={layer.name} className="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
+          <div
+            key={layer.name}
+            className="flex items-center justify-between py-2 border-b border-slate-50 last:border-0"
+          >
             <span className="text-sm text-slate-700">{layer.name}</span>
             <span className="flex items-center text-xs font-medium text-green-700">
               <Dot color="green" /> {layer.status}
@@ -283,13 +443,22 @@ function DocumentTable({ documents, onView }) {
       </div>
       <div className="divide-y divide-slate-50">
         {documents.map((doc) => (
-          <div key={doc.id} className="px-5 py-3 md:grid md:grid-cols-12 md:items-center flex flex-col gap-1.5">
+          <div
+            key={doc.id}
+            className="px-5 py-3 md:grid md:grid-cols-12 md:items-center flex flex-col gap-1.5"
+          >
             <div className="col-span-5 flex items-center gap-2 min-w-0">
               <FileText size={15} className="text-slate-400 flex-shrink-0" />
-              <span className="text-sm text-slate-800 truncate">{doc.name}</span>
+              <span className="text-sm text-slate-800 truncate">
+                {doc.name}
+              </span>
             </div>
-            <span className="col-span-3 text-sm text-slate-500">{doc.source}</span>
-            <span className="col-span-2 text-sm text-slate-500">{doc.uploaded}</span>
+            <span className="col-span-3 text-sm text-slate-500">
+              {doc.source}
+            </span>
+            <span className="col-span-2 text-sm text-slate-500">
+              {doc.uploaded}
+            </span>
             <div className="col-span-1">
               <StatusBadge status={doc.status} />
             </div>
@@ -319,14 +488,22 @@ function DocumentDetails({ doc, onClose }) {
   const isBlocked = doc.status === "BLOCKED";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-slate-900 bg-opacity-40" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-slate-900 bg-opacity-40"
+      onClick={onClose}
+    >
       <div
         className="bg-white rounded-xl shadow-lg w-full max-w-md max-h-full overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-          <h3 className="text-sm font-semibold text-slate-900">Document Details</h3>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
+          <h3 className="text-sm font-semibold text-slate-900">
+            Document Details
+          </h3>
+          <button
+            onClick={onClose}
+            className="text-slate-400 hover:text-slate-600"
+          >
             <X size={18} />
           </button>
         </div>
@@ -334,35 +511,79 @@ function DocumentDetails({ doc, onClose }) {
         <div className="p-5 space-y-4">
           <div>
             <p className="text-sm font-medium text-slate-900">{doc.name}</p>
-            <p className="text-xs text-slate-500 mt-0.5">{doc.source} &middot; Uploaded {doc.uploaded}</p>
+            <p className="text-xs text-slate-500 mt-0.5">
+              {doc.source} &middot; Uploaded {doc.uploaded}
+            </p>
           </div>
 
           {(isQuarantined || isBlocked) && (
-            <div className={`rounded-lg border p-4 ${isBlocked ? "bg-red-50 border-red-200" : "bg-amber-50 border-amber-200"}`}>
-              <div className={`flex items-center gap-2 text-sm font-semibold ${isBlocked ? "text-red-700" : "text-amber-700"}`}>
+            <div
+              className={`rounded-lg border p-4 ${isBlocked ? "bg-red-50 border-red-200" : "bg-amber-50 border-amber-200"}`}
+            >
+              <div
+                className={`flex items-center gap-2 text-sm font-semibold ${isBlocked ? "text-red-700" : "text-amber-700"}`}
+              >
                 <AlertTriangle size={16} />
                 {isBlocked ? "Document Blocked" : "Document Quarantined"}
               </div>
               <dl className="mt-3 space-y-1.5 text-xs">
-                <div className="flex justify-between"><dt className="text-slate-500">Threat</dt><dd className="text-slate-800 font-medium">Prompt Injection Detected</dd></div>
-                <div className="flex justify-between"><dt className="text-slate-500">Security Score</dt><dd className="text-slate-800 font-medium">87%</dd></div>
-                <div className="flex justify-between"><dt className="text-slate-500">Action</dt><dd className="text-slate-800 font-medium">Blocked from knowledge base</dd></div>
+                <div className="flex justify-between">
+                  <dt className="text-slate-500">Threat</dt>
+                  <dd className="text-slate-800 font-medium">
+                    Prompt Injection Detected
+                  </dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-slate-500">Security Score</dt>
+                  <dd className="text-slate-800 font-medium">87%</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-slate-500">Action</dt>
+                  <dd className="text-slate-800 font-medium">
+                    Blocked from knowledge base
+                  </dd>
+                </div>
               </dl>
               <p className="text-xs text-slate-600 mt-3">
-                The document contains suspicious instructions that could attempt to manipulate the RAG system.
+                The document contains suspicious instructions that could attempt
+                to manipulate the RAG system.
               </p>
             </div>
           )}
 
           <div className="rounded-lg border border-slate-200 p-4">
-            <p className="text-xs font-medium text-slate-500 mb-3">Security Scan</p>
+            <p className="text-xs font-medium text-slate-500 mb-3">
+              Security Scan
+            </p>
             <dl className="space-y-2 text-xs">
-              <div className="flex justify-between"><dt className="text-slate-500">SHA-256</dt><dd className="text-slate-800 font-mono">a84f&hellip;91c2</dd></div>
-              <div className="flex justify-between"><dt className="text-slate-500">Provenance</dt><dd className="text-slate-800">Verified</dd></div>
-              <div className="flex justify-between"><dt className="text-slate-500">Prompt Injection Score</dt><dd className={isSafe ? "text-green-700" : "text-red-700"}>{isSafe ? "2%" : "87%"}</dd></div>
-              <div className="flex justify-between"><dt className="text-slate-500">Anomaly Score</dt><dd className="text-slate-800">{isSafe ? "Low" : "High"}</dd></div>
-              <div className="flex justify-between"><dt className="text-slate-500">Vector Database Status</dt><dd className="text-slate-800">{isSafe ? "Stored securely" : "Not stored"}</dd></div>
-              <div className="flex justify-between"><dt className="text-slate-500">Tenant</dt><dd className="text-slate-800">Acme Corp</dd></div>
+              <div className="flex justify-between">
+                <dt className="text-slate-500">SHA-256</dt>
+                <dd className="text-slate-800 font-mono">a84f&hellip;91c2</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-slate-500">Provenance</dt>
+                <dd className="text-slate-800">Verified</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-slate-500">Prompt Injection Score</dt>
+                <dd className={isSafe ? "text-green-700" : "text-red-700"}>
+                  {isSafe ? "2%" : "87%"}
+                </dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-slate-500">Anomaly Score</dt>
+                <dd className="text-slate-800">{isSafe ? "Low" : "High"}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-slate-500">Vector Database Status</dt>
+                <dd className="text-slate-800">
+                  {isSafe ? "Stored securely" : "Not stored"}
+                </dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-slate-500">Tenant</dt>
+                <dd className="text-slate-800">Acme Corp</dd>
+              </div>
             </dl>
           </div>
         </div>
@@ -394,12 +615,10 @@ function UploadModal({ onClose }) {
 
     if (!file) return;
 
-    const allowedTypes = ["application/pdf", "text/plain"];
-
     const extension = file.name.split(".").pop().toLowerCase();
 
-    if (!["pdf", "docx", "txt"].includes(extension)) {
-      setError("Only PDF, DOCX and TXT files are allowed.");
+    if (extension !== "pdf") {
+      setError("Only PDF files are allowed.");
       setSelectedFile(null);
       return;
     }
@@ -418,34 +637,70 @@ function UploadModal({ onClose }) {
       setUploading(true);
       setError("");
       setStage("scanning");
+      setResult(null);
+
+      const accessToken = sessionStorage.getItem("access_token");
+
+      if (!accessToken) {
+        throw new Error("Session expired. Please login again.");
+      }
 
       const formData = new FormData();
       formData.append("file", selectedFile);
 
       const response = await fetch(
-        "http://127.0.0.1:5000/api/documents/upload",
+        "http://localhost:5000/api/documents/upload",
         {
           method: "POST",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
           body: formData,
-        }
+        },
       );
 
       const data = await response.json();
+
+      console.log("Upload response:", data);
+
+      if (data.status === "quarantined") {
+        setResult({
+          status: "quarantined",
+          filename: data.filename,
+          threatScore: data.threat_score,
+          threats: data.threats || [],
+          message: data.message,
+        });
+
+        setStage("result");
+        return;
+      }
 
       if (!response.ok) {
         throw new Error(data.error || "Upload failed");
       }
 
-      console.log("Upload successful:", data);
+      setResult({
+        status: "safe",
+        filename: data.filename,
+        threatScore: data.threat_score || 0,
+        threats: [],
+        message: data.message,
+      });
 
-      setResult("safe");
       setStage("result");
     } catch (error) {
       console.error("Upload error:", error);
 
-      setResult("threat");
+      setResult({
+        status: "error",
+        filename: selectedFile?.name,
+        threatScore: 0,
+        threats: [],
+        message: error.message || "Unable to upload document.",
+      });
+
       setStage("result");
-      setError(error.message || "Unable to upload document.");
     } finally {
       setUploading(false);
     }
@@ -474,13 +729,12 @@ function UploadModal({ onClose }) {
         </div>
 
         <div className="p-5 space-y-4">
-
           {stage === "idle" && (
             <>
               <input
                 id="document-upload"
                 type="file"
-                accept=".pdf,.docx,.txt"
+                accept=".pdf"
                 className="hidden"
                 onChange={handleFileChange}
               />
@@ -498,22 +752,15 @@ function UploadModal({ onClose }) {
                 </p>
 
                 <p className="text-xs text-slate-400 mt-1">
-                  Supported: PDF, DOCX, TXT
+                  Supported: PDF
                 </p>
               </label>
 
-              {error && (
-                <p className="text-xs text-red-600">
-                  {error}
-                </p>
-              )}
+              {error && <p className="text-xs text-red-600">{error}</p>}
 
               {selectedFile && (
                 <div className="flex items-center gap-2 rounded-lg bg-slate-50 border border-slate-200 p-3">
-                  <FileText
-                    size={16}
-                    className="text-blue-600 flex-shrink-0"
-                  />
+                  <FileText size={16} className="text-blue-600 flex-shrink-0" />
 
                   <div className="min-w-0">
                     <p className="text-sm text-slate-700 truncate">
@@ -537,10 +784,7 @@ function UploadModal({ onClose }) {
                     key={c.label}
                     className="flex items-center gap-2 text-xs text-slate-600 border border-slate-100 rounded-md px-2.5 py-2"
                   >
-                    <c.icon
-                      size={14}
-                      className="text-slate-400"
-                    />
+                    <c.icon size={14} className="text-slate-400" />
 
                     {c.label}
                   </div>
@@ -571,41 +815,113 @@ function UploadModal({ onClose }) {
             </div>
           )}
 
-          {stage === "result" && result === "safe" && (
-            <div className="rounded-lg border border-green-200 bg-green-50 p-4">
-              <div className="flex items-center gap-2 text-sm font-semibold text-green-700">
-                <CheckCircle2 size={16} />
-                Document Uploaded Successfully
-              </div>
+          {stage === "result" && result?.status === "safe" && (
+  <div className="mt-6 rounded-lg border border-gray-300 bg-white p-5">
 
-              <p className="text-xs text-slate-600 mt-2">
-                <strong>{selectedFile?.name}</strong> has been stored
-                securely in Supabase.
-              </p>
-            </div>
-          )}
+    <h3 className="text-lg font-semibold text-gray-900">
+      Document Safe
+    </h3>
 
-          {stage === "result" && result === "threat" && (
-            <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-              <div className="flex items-center gap-2 text-sm font-semibold text-red-700">
-                <AlertTriangle size={16} />
-                Upload Failed
-              </div>
+    <p className="mt-1 text-sm text-gray-600">
+      {result.filename}
+    </p>
 
-              <p className="text-xs text-red-600 mt-2">
-                {error || "The document could not be uploaded."}
-              </p>
-            </div>
-          )}
+    <div className="mt-4 border-t border-gray-200 pt-4">
+      <p className="text-sm font-medium text-green-600">
+        Security Scan Passed
+      </p>
 
-          {stage === "result" && (
-            <button
-              onClick={onClose}
-              className="w-full bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium rounded-lg py-2.5"
-            >
-              Done
-            </button>
-          )}
+      <p className="mt-1 text-sm text-gray-600">
+        No ingestion vulnerabilities were detected.
+      </p>
+    </div>
+
+  </div>
+)}
+
+         {stage === "result" && result?.status === "error" && (
+  <div className="mt-6 rounded-lg border border-gray-300 bg-white p-5">
+    <h3 className="text-lg font-semibold text-gray-900">
+      Upload Failed
+    </h3>
+    <p className="mt-2 text-sm text-gray-600">
+      {result.message}
+    </p>
+  </div>
+)}
+
+          {stage === "result" && result?.status === "quarantined" && (
+  <div className="mt-6 rounded-lg border border-gray-300 bg-white p-5">
+
+    <div className="mb-4">
+      <h3 className="text-lg font-semibold text-gray-900">
+        Document Quarantined
+      </h3>
+
+      <p className="mt-1 text-sm text-gray-600">
+        {result.filename}
+      </p>
+    </div>
+
+    <div className="mb-4 flex justify-between border-b border-gray-200 pb-3">
+      <span className="text-sm text-gray-700">
+        Threat Score
+      </span>
+
+      <span className="text-sm font-semibold text-red-600">
+        {Number(result.threatScore).toFixed(2)}
+      </span>
+    </div>
+
+    <p className="mb-3 text-sm font-semibold text-gray-900">
+      Threats Detected
+    </p>
+
+    <div className="space-y-3">
+
+      {result.threats.map((threat, index) => (
+        <div
+          key={index}
+          className="border-b border-gray-200 pb-3"
+        >
+
+          <div className="flex justify-between">
+
+            <span className="text-sm font-medium text-gray-900">
+              {threat.threat_type
+                .replace(/_/g, " ")
+                .replace(/\b\w/g, char => char.toUpperCase())}
+            </span>
+
+            <span className="text-xs text-gray-500">
+              Page {threat.page_number}
+            </span>
+
+          </div>
+
+          <p className="mt-1 text-sm text-gray-700">
+            "{threat.matched_text}"
+          </p>
+
+        </div>
+      ))}
+
+    </div>
+
+    <div className="mt-4 border-t border-gray-200 pt-4">
+
+      <p className="text-sm font-medium text-red-600">
+        Upload Blocked
+      </p>
+
+      <p className="mt-1 text-sm text-gray-600">
+        This document was blocked before entering the RAG knowledge base.
+      </p>
+
+    </div>
+
+  </div>
+)}
 
         </div>
       </div>
@@ -622,13 +938,18 @@ function UploadModal({ onClose }) {
 function RAGChatPanel({ onClose }) {
   const [messages, setMessages] = useState([
     { role: "user", text: "What is the leave policy?" },
-    { role: "ai", text: RAG_RESPONSES["what is the leave policy?"].answer, source: RAG_RESPONSES["what is the leave policy?"].source },
+    {
+      role: "ai",
+      text: RAG_RESPONSES["what is the leave policy?"].answer,
+      source: RAG_RESPONSES["what is the leave policy?"].source,
+    },
   ]);
   const [input, setInput] = useState("");
   const scrollRef = useRef(null);
 
   useEffect(() => {
-    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    if (scrollRef.current)
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages]);
 
   function respondTo(question) {
@@ -646,8 +967,15 @@ function RAGChatPanel({ onClose }) {
       ...m,
       { role: "user", text: question },
       found
-        ? { role: "ai", text: found.answer, source: found.source }
-        : { role: "ai", text: "I couldn't find a confident, grounded answer to that in your trusted documents.", source: null },
+        ? {
+            role: "ai",
+            text: found.answer,
+            source: found.source,
+          }
+        : {
+            role: "ai",
+            text: "I couldn't find relevant information.",
+          },
     ]);
   }
 
@@ -660,7 +988,10 @@ function RAGChatPanel({ onClose }) {
   return (
     <div
       className="fixed bottom-24 right-4 z-50 flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl sm:right-6"
-      style={{ width: "min(400px, calc(100vw - 2rem))", height: "min(560px, calc(100vh - 8rem))" }}
+      style={{
+        width: "min(400px, calc(100vw - 2rem))",
+        height: "min(560px, calc(100vh - 8rem))",
+      }}
     >
       <div className="flex items-center gap-2.5 border-b border-slate-100 bg-slate-900 px-4 py-3.5">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
@@ -668,19 +999,29 @@ function RAGChatPanel({ onClose }) {
         </div>
         <div className="flex-1">
           <p className="text-sm font-semibold text-white">RAG Assistant</p>
-          <p className="text-[11px] text-slate-400">Ask about your trusted documents</p>
+          <p className="text-[11px] text-slate-400">
+            Ask about your trusted documents
+          </p>
         </div>
-        <button onClick={onClose} className="rounded-md p-1 text-slate-400 hover:bg-slate-800 hover:text-white">
+        <button
+          onClick={onClose}
+          className="rounded-md p-1 text-slate-400 hover:bg-slate-800 hover:text-white"
+        >
           <X className="h-4 w-4" />
         </button>
       </div>
 
-      <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
+      <div
+        ref={scrollRef}
+        className="flex-1 space-y-3 overflow-y-auto px-4 py-4"
+      >
         {messages.map((m, i) => {
           if (m.role === "user") {
             return (
               <div key={i} className="flex justify-end">
-                <div className="max-w-[85%] rounded-lg rounded-br-sm bg-blue-600 px-3 py-2 text-sm text-white">{m.text}</div>
+                <div className="max-w-[85%] rounded-lg rounded-br-sm bg-blue-600 px-3 py-2 text-sm text-white">
+                  {m.text}
+                </div>
               </div>
             );
           }
@@ -692,7 +1033,8 @@ function RAGChatPanel({ onClose }) {
                     <ShieldAlert className="h-3.5 w-3.5" /> Response Blocked
                   </p>
                   <p className="mt-1 text-xs text-red-600">
-                    RAGShield detected potentially malicious instructions in the retrieved content. Your data remains protected.
+                    RAGShield detected potentially malicious instructions in the
+                    retrieved content. Your data remains protected.
                   </p>
                 </div>
               </div>
@@ -701,7 +1043,9 @@ function RAGChatPanel({ onClose }) {
           return (
             <div key={i} className="flex justify-start">
               <div className="max-w-[85%] space-y-1.5">
-                <div className="rounded-lg rounded-bl-sm bg-slate-100 px-3 py-2 text-sm text-slate-700">{m.text}</div>
+                <div className="rounded-lg rounded-bl-sm bg-slate-100 px-3 py-2 text-sm text-slate-700">
+                  {m.text}
+                </div>
                 {m.source && (
                   <p className="flex items-center gap-1 pl-1 text-[11px] text-slate-400">
                     <FileText className="h-3 w-3" />
@@ -715,7 +1059,9 @@ function RAGChatPanel({ onClose }) {
 
         {messages.length <= 2 && (
           <div className="pt-1">
-            <p className="mb-1.5 text-[11px] font-medium text-slate-400">Suggested Questions</p>
+            <p className="mb-1.5 text-[11px] font-medium text-slate-400">
+              Suggested Questions
+            </p>
             <div className="flex flex-wrap gap-1.5">
               {SUGGESTED_QUESTIONS.map((q) => (
                 <button
@@ -740,11 +1086,16 @@ function RAGChatPanel({ onClose }) {
             placeholder="Ask something..."
             className="flex-1 bg-transparent text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none"
           />
-          <button onClick={handleSend} className="flex h-7 w-7 items-center justify-center rounded-md bg-blue-600 text-white hover:bg-blue-700">
+          <button
+            onClick={handleSend}
+            className="flex h-7 w-7 items-center justify-center rounded-md bg-blue-600 text-white hover:bg-blue-700"
+          >
             <Send className="h-3.5 w-3.5" />
           </button>
         </div>
-        <p className="mt-2 text-center text-[10px] leading-snug text-slate-400">Responses are scanned for security and grounded in your documents.</p>
+        <p className="mt-2 text-center text-[10px] leading-snug text-slate-400">
+          Responses are scanned for security and grounded in your documents.
+        </p>
       </div>
     </div>
   );
@@ -753,7 +1104,9 @@ function RAGChatPanel({ onClose }) {
 function FloatingRAGAssistant({ open, setOpen }) {
   return (
     <>
-      <div className={`transition-all duration-200 ${open ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0 translate-y-2"}`}>
+      <div
+        className={`transition-all duration-200 ${open ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0 translate-y-2"}`}
+      >
         {open && <RAGChatPanel onClose={() => setOpen(false)} />}
       </div>
 
@@ -762,8 +1115,14 @@ function FloatingRAGAssistant({ open, setOpen }) {
           onClick={() => setOpen((o) => !o)}
           className="relative flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg transition-transform hover:scale-105 hover:bg-blue-700"
         >
-          {open ? <X className="h-6 w-6" /> : <MessageCircle className="h-6 w-6" />}
-          {!open && <span className="absolute right-0 top-0 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white" />}
+          {open ? (
+            <X className="h-6 w-6" />
+          ) : (
+            <MessageCircle className="h-6 w-6" />
+          )}
+          {!open && (
+            <span className="absolute right-0 top-0 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white" />
+          )}
         </button>
         {!open && (
           <span className="pointer-events-none absolute bottom-1/2 right-full mr-3 translate-y-1/2 whitespace-nowrap rounded-md bg-slate-900 px-2.5 py-1.5 text-xs font-medium text-white opacity-0 shadow-md transition-opacity group-hover:opacity-100">
@@ -783,8 +1142,12 @@ function DashboardPage({ onView, onUpload }) {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold text-slate-900">Welcome back, John</h2>
-        <p className="text-sm text-slate-500 mt-0.5">Your RAG environment is protected and ready &middot; Acme Corp</p>
+        <h2 className="text-xl font-semibold text-slate-900">
+          Welcome back, John
+        </h2>
+        <p className="text-sm text-slate-500 mt-0.5">
+          Your RAG environment is protected and ready &middot; Acme Corp
+        </p>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -797,7 +1160,9 @@ function DashboardPage({ onView, onUpload }) {
 
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-semibold text-slate-900">Recent Documents</h2>
+          <h2 className="text-sm font-semibold text-slate-900">
+            Recent Documents
+          </h2>
           <button
             onClick={onUpload}
             className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-lg px-3 py-2"
@@ -817,7 +1182,9 @@ function DocumentsPage({ onView, onUpload }) {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-semibold text-slate-900">My Documents</h2>
-          <p className="text-sm text-slate-500 mt-0.5">All documents you've uploaded to RAGShield</p>
+          <p className="text-sm text-slate-500 mt-0.5">
+            All documents you've uploaded to RAGShield
+          </p>
         </div>
         <button
           onClick={onUpload}
@@ -835,7 +1202,9 @@ function SecurityPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold text-slate-900">Your Environment</h2>
+        <h2 className="text-xl font-semibold text-slate-900">
+          Your Environment
+        </h2>
         <div className="flex items-center gap-2 mt-1.5 text-sm font-medium text-green-700">
           <Dot color="green" /> Protection Status: PROTECTED
         </div>
@@ -843,7 +1212,10 @@ function SecurityPage() {
 
       <div className="grid sm:grid-cols-2 gap-3">
         {SECURITY_CARDS.map((c) => (
-          <div key={c.title} className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+          <div
+            key={c.title}
+            className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm"
+          >
             <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center mb-3">
               <c.icon size={17} className="text-blue-600" />
             </div>
@@ -857,15 +1229,24 @@ function SecurityPage() {
 
       <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
         <div className="px-5 py-3 border-b border-slate-100">
-          <h2 className="text-sm font-semibold text-slate-900">Security Events</h2>
+          <h2 className="text-sm font-semibold text-slate-900">
+            Security Events
+          </h2>
         </div>
         <div className="divide-y divide-slate-50">
           {SECURITY_EVENTS.map((ev, i) => (
-            <div key={i} className="px-5 py-3 flex items-center justify-between">
+            <div
+              key={i}
+              className="px-5 py-3 flex items-center justify-between"
+            >
               <div className="flex items-center gap-3 min-w-0">
                 <Clock size={14} className="text-slate-400 flex-shrink-0" />
-                <span className="text-xs text-slate-400 w-16 flex-shrink-0">{ev.time}</span>
-                <span className="text-sm text-slate-700 truncate">{ev.event}</span>
+                <span className="text-xs text-slate-400 w-16 flex-shrink-0">
+                  {ev.time}
+                </span>
+                <span className="text-sm text-slate-700 truncate">
+                  {ev.event}
+                </span>
               </div>
               <StatusBadge status={ev.status} />
             </div>
@@ -881,7 +1262,9 @@ function ActivityPage() {
     <div className="space-y-6">
       <div>
         <h2 className="text-xl font-semibold text-slate-900">Activity</h2>
-        <p className="text-sm text-slate-500 mt-0.5">A timeline of what's happened in your account</p>
+        <p className="text-sm text-slate-500 mt-0.5">
+          A timeline of what's happened in your account
+        </p>
       </div>
 
       {ACTIVITY.map((group) => (
@@ -897,7 +1280,9 @@ function ActivityPage() {
                   <p className="text-sm text-slate-800">{it.title}</p>
                   <p className="text-xs text-slate-500 mt-0.5">{it.detail}</p>
                 </div>
-                <span className="ml-auto text-xs text-slate-400 flex-shrink-0">{it.time}</span>
+                <span className="ml-auto text-xs text-slate-400 flex-shrink-0">
+                  {it.time}
+                </span>
               </div>
             ))}
           </div>
@@ -912,7 +1297,9 @@ function SettingsPage({ email }) {
     <div className="space-y-6 max-w-xl">
       <div>
         <h2 className="text-xl font-semibold text-slate-900">Settings</h2>
-        <p className="text-sm text-slate-500 mt-0.5">Manage your account preferences</p>
+        <p className="text-sm text-slate-500 mt-0.5">
+          Manage your account preferences
+        </p>
       </div>
       <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-5 space-y-4">
         <div>
@@ -921,7 +1308,9 @@ function SettingsPage({ email }) {
         </div>
         <div>
           <p className="text-xs font-medium text-slate-500">Email</p>
-          <p className="text-sm text-slate-800 mt-1">{email || "john@acme.com"}</p>
+          <p className="text-sm text-slate-800 mt-1">
+            {email || "john@acme.com"}
+          </p>
         </div>
         <div>
           <p className="text-xs font-medium text-slate-500">Organization</p>
@@ -956,7 +1345,10 @@ export default function UserApp({ email, onLogout }) {
   const [assistantOpen, setAssistantOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-slate-50" style={{ fontFamily: "Inter, sans-serif" }}>
+    <div
+      className="min-h-screen bg-slate-50"
+      style={{ fontFamily: "Inter, sans-serif" }}
+    >
       <Sidebar
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
@@ -974,8 +1366,18 @@ export default function UserApp({ email, onLogout }) {
       />
 
       <main className="px-4 sm:px-8 py-6 max-w-6xl mx-auto">
-        {page === "dashboard" && <DashboardPage onView={setSelectedDoc} onUpload={() => setUploadOpen(true)} />}
-        {page === "documents" && <DocumentsPage onView={setSelectedDoc} onUpload={() => setUploadOpen(true)} />}
+        {page === "dashboard" && (
+          <DashboardPage
+            onView={setSelectedDoc}
+            onUpload={() => setUploadOpen(true)}
+          />
+        )}
+        {page === "documents" && (
+          <DocumentsPage
+            onView={setSelectedDoc}
+            onUpload={() => setUploadOpen(true)}
+          />
+        )}
         {page === "security" && <SecurityPage />}
         {page === "activity" && <ActivityPage />}
         {page === "settings" && <SettingsPage email={email} />}
@@ -983,7 +1385,12 @@ export default function UserApp({ email, onLogout }) {
 
       <FloatingRAGAssistant open={assistantOpen} setOpen={setAssistantOpen} />
 
-      {selectedDoc && <DocumentDetails doc={selectedDoc} onClose={() => setSelectedDoc(null)} />}
+      {selectedDoc && (
+        <DocumentDetails
+          doc={selectedDoc}
+          onClose={() => setSelectedDoc(null)}
+        />
+      )}
       {uploadOpen && <UploadModal onClose={() => setUploadOpen(false)} />}
     </div>
   );

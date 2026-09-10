@@ -1,11 +1,16 @@
-import pymupdf
+import pymupdf as fitz
 
-def extract_text_from_pdf(pdf_file):
+
+def extract_text_from_pdf(pdf_bytes):
     pages = []
 
-    pdf = pymupdf.open(stream=pdf_file.read(), filetype="pdf")
+    pdf = fitz.open(
+        stream=pdf_bytes,
+        filetype="pdf"
+    )
 
     for page_number, page in enumerate(pdf, start=1):
+
         text = page.get_text("text").strip()
 
         if text:
@@ -17,6 +22,3 @@ def extract_text_from_pdf(pdf_file):
     pdf.close()
 
     return pages
-
-
- 

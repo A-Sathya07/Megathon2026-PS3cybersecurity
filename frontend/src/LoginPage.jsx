@@ -34,6 +34,7 @@ export default function LoginPage({ onLogin }) {
     try {
       const response = await fetch("http://localhost:5000/login", {
         method: "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
@@ -52,7 +53,10 @@ export default function LoginPage({ onLogin }) {
       }
 
       console.log("Login successful:", data);
-      
+
+      sessionStorage.setItem("access_token", data.access_token);
+
+      sessionStorage.setItem("user", JSON.stringify(data.user));
 
       onLogin(data);
     } catch (error) {
