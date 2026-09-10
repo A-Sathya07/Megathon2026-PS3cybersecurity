@@ -4,10 +4,13 @@ import UserApp from "./UserApp.jsx";
 import AdminApp from "./AdminApp.jsx";
 
 export default function App() {
-  const [session, setSession] = useState(null); // { role, email } | null
+  const [session, setSession] = useState(null);
 
-  function handleLogin(role, email) {
-    setSession({ role, email });
+  function handleLogin(data) {
+    setSession({
+      role: data.role,
+      email: data.email
+    });
   }
 
   function handleLogout() {

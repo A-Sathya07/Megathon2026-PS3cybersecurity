@@ -1,4 +1,4 @@
-from backend.config import supabase
+from config import supabase
 
 
 def upload_document(file_bytes, company_folder, filename, content_type):

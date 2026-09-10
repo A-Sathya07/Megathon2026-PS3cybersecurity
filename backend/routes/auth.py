@@ -1,66 +1,87 @@
-from flask import Blueprint, request, jsonify
-from backend.config import supabase
+from flask import Blueprint, request, jsonify, session
+from config import supabase
 
 auth_bp = Blueprint("auth", __name__)
 
 
 @auth_bp.route("/login", methods=["POST"])
 def login():
-    data = request.get_json() or {}
 
-    email = data.get("email")
-    password = data.get("password")
-    selected_role = data.get("role")
+    data = request.get_json()
+
+    email = data.get("email", "").strip()
+    password = data.get("password", "")
+    selected_role = data.get("role", "").lower().strip()
 
     if not email or not password or not selected_role:
         return jsonify({
-            "error": "Email, password and role are required"
+            "error": "Email, password and role are required."
         }), 400
 
     try:
-        res = supabase.auth.sign_in_with_password({
+
+        # 1. Authenticate using Supabase Auth
+        result = supabase.auth.sign_in_with_password({
             "email": email,
-            "password": password,
+            "password": password
         })
 
-        user_id = res.user.id
-        access_token = res.session.access_token
+        user = result.user
 
-        profile = (
+        if not user:
+            return jsonify({
+                "error": "Invalid email or password."
+            }), 401
+
+        # 2. Get the REAL role from public.users
+        user_result = (
             supabase
             .table("users")
-            .select("id, email, role, company")
-            .eq("id", user_id)
+            .select("id, email, role, tenant_id")
+            .eq("id", user.id)
             .single()
             .execute()
         )
 
-        if not profile.data:
-            return jsonify({
-                "error": "User profile not found"
-            }), 404
+        db_user = user_result.data
 
-        actual_role = profile.data.get("role")
-        company = profile.data.get("company")
-
-        if not actual_role or actual_role.lower() != selected_role.lower():
+        if not db_user:
             return jsonify({
-                "error": "This account does not have the selected role"
+                "error": "User profile not found."
             }), 403
 
+        actual_role = str(db_user["role"]).lower().strip()
+
+        # 3. VERY IMPORTANT ROLE CHECK
+        if actual_role != selected_role:
+
+            # Sign the user out
+            supabase.auth.sign_out()
+
+            return jsonify({
+                "error": f"This account is registered as {actual_role.title()}. "
+                         f"Please select {actual_role.title()} login."
+            }), 403
+
+        # 4. Save authenticated information
+        session["user_id"] = user.id
+        session["email"] = db_user["email"]
+        session["role"] = actual_role
+        session["tenant_id"] = db_user["tenant_id"]
+
+        # 5. Return verified role
         return jsonify({
             "message": "Login successful",
-            "access_token": access_token,
-            "user": {
-                "id": user_id,
-                "email": email,
-                "role": actual_role,
-                "company": company
-            }
+            "user_id": user.id,
+            "email": db_user["email"],
+            "role": actual_role,
+            "tenant_id": db_user["tenant_id"]
         }), 200
 
     except Exception as e:
-        print("LOGIN ERROR:", repr(e))
+
+        print("LOGIN ERROR:", e)
+
         return jsonify({
-            "error": "Invalid email or password"
+            "error": "Invalid email or password."
         }), 401

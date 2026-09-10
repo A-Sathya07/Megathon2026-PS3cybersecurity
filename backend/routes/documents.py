@@ -2,12 +2,12 @@ import uuid
 
 from flask import Blueprint, request, jsonify
 
-from backend.config import supabase
-from backend.database.queries import get_user_by_id
-from backend.database.upload import upload_document
+from config import supabase
+from database.queries import get_user_by_id
+from database.upload import upload_document
 
-from backend.rag.parser import extract_text_from_pdf
-from backend.security.ingestion import scan_document
+from rag.parser import extract_text_from_pdf
+from security.ingestion import scan_document
 
 
 documents_bp = Blueprint("documents", __name__)
