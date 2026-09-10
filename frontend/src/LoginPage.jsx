@@ -1,5 +1,13 @@
 import React, { useState } from "react";
-import { Shield, Mail, Lock, Eye, EyeOff, User, ShieldCheck } from "lucide-react";
+import {
+  Shield,
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  User,
+  ShieldCheck,
+} from "lucide-react";
 
 const ROLES = [
   { key: "user", label: "User", icon: User },
@@ -13,25 +21,62 @@ export default function LoginPage({ onLogin }) {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
+
     if (!email.trim() || !password.trim()) {
       setError("Enter an email and password to continue.");
       return;
     }
+
     setError("");
-    onLogin(role, email.trim());
+
+    try {
+      const response = await fetch("http://localhost:5000/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          role: role,
+          email: email.trim(),
+          password: password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || "Login failed.");
+        return;
+      }
+
+      console.log("Login successful:", data);
+      
+
+      onLogin(data);
+    } catch (error) {
+      console.error(error);
+      setError("Unable to connect to the server.");
+    }
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4" style={{ fontFamily: "Inter, sans-serif" }}>
+    <div
+      className="min-h-screen bg-slate-50 flex items-center justify-center px-4"
+      style={{ fontFamily: "Inter, sans-serif" }}
+    >
       <div className="w-full max-w-sm">
         <div className="flex flex-col items-center mb-6">
           <div className="w-11 h-11 rounded-xl bg-blue-600 flex items-center justify-center mb-3">
             <Shield size={22} className="text-white" />
           </div>
-          <h1 className="text-lg font-semibold text-slate-900 tracking-tight">RAGShield</h1>
-          <p className="text-xs text-slate-500 mt-1">Secure RAG for a Safer Tomorrow</p>
+          <h1 className="text-lg font-semibold text-slate-900 tracking-tight">
+            RAGShield
+          </h1>
+          <p className="text-xs text-slate-500 mt-1">
+            Secure RAG for a Safer Tomorrow
+          </p>
         </div>
 
         <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-6">
@@ -45,7 +90,9 @@ export default function LoginPage({ onLogin }) {
                   type="button"
                   onClick={() => setRole(r.key)}
                   className={`flex items-center justify-center gap-1.5 text-xs font-medium rounded-md py-2 transition-colors ${
-                    active ? "bg-white text-blue-700 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                    active
+                      ? "bg-white text-blue-700 shadow-sm"
+                      : "text-slate-500 hover:text-slate-700"
                   }`}
                 >
                   <Icon size={13} />
@@ -57,31 +104,41 @@ export default function LoginPage({ onLogin }) {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="text-xs font-medium text-slate-600">Email</label>
+              <label className="text-xs font-medium text-slate-600">
+                Email
+              </label>
               <div className="mt-1 flex items-center gap-2 border border-slate-200 rounded-lg px-3 py-2.5 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500">
                 <Mail size={15} className="text-slate-400 flex-shrink-0" />
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder={role === "admin" ? "admin@acme.com" : "john@acme.com"}
+                  placeholder={
+                    role === "admin" ? "admin@acme.com" : "john@acme.com"
+                  }
                   className="flex-1 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none"
                 />
               </div>
             </div>
 
             <div>
-              <label className="text-xs font-medium text-slate-600">Password</label>
+              <label className="text-xs font-medium text-slate-600">
+                Password
+              </label>
               <div className="mt-1 flex items-center gap-2 border border-slate-200 rounded-lg px-3 py-2.5 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500">
                 <Lock size={15} className="text-slate-400 flex-shrink-0" />
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022"
+                  placeholder="*******"
                   className="flex-1 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none"
                 />
-                <button type="button" onClick={() => setShowPassword((s) => !s)} className="text-slate-400 hover:text-slate-600 flex-shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((s) => !s)}
+                  className="text-slate-400 hover:text-slate-600 flex-shrink-0"
+                >
                   {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
                 </button>
               </div>
@@ -97,10 +154,6 @@ export default function LoginPage({ onLogin }) {
             </button>
           </form>
         </div>
-
-        <p className="text-center text-xs text-slate-400 mt-4">
-          Demo login \u2014 any email and password combination works.
-        </p>
       </div>
     </div>
   );
