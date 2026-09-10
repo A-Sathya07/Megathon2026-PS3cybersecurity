@@ -20,7 +20,7 @@ def login():
     try:
         res = supabase.auth.sign_in_with_password({
             "email": email,
-            "password": password
+            "password": password,
         })
 
         user_id = res.user.id
