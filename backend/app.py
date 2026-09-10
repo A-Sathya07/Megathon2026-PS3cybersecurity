@@ -1,8 +1,8 @@
 from flask import Flask
 from flask_cors import CORS
 from config import Config, supabase
+
 from routes.auth import auth_bp
-from routes.chat import chat_bp
 from routes.documents import documents_bp
 
 app = Flask(__name__)
