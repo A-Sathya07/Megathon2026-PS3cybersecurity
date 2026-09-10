@@ -1,5 +1,9 @@
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
 from flask import Blueprint, request, jsonify
-from app import supabase   # reuse the client from app.py
+from config import supabase   
 
 auth_bp = Blueprint("auth", __name__)
 

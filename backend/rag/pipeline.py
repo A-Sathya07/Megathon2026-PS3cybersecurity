@@ -18,7 +18,7 @@ def ingest_pdf(pdf_path: str, tenant_id: str = "tenant_a"):
 
     print(f"      Extracted {len(pages)} pages")
 
-    # [2] Chunk
+  
     print("[2/4] Chunking text...")
     chunks = []
     for page in pages:
@@ -49,11 +49,9 @@ def ingest_pdf(pdf_path: str, tenant_id: str = "tenant_a"):
     return len(chunks)
 
 
-# ---------- QUERY PIPELINE ----------
+-
 def query(question: str, tenant_id: str = "tenant_a", top_k: int = 5):
-    """
-    Full query: question → embed → retrieve → generate answer.
-    """
+
     print(f"[1/3] Embedding question: {question}")
     q_vec = embed_query(question)
 

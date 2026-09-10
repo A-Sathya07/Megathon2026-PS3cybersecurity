@@ -26,3 +26,14 @@ def chunk_pages(pages, chunk_size=1000, overlap=200):
             start = end - overlap
 
     return chunks
+
+if __name__ == "__main__":
+    from parser import extract_text_from_pdf
+
+    parsed = extract_text_from_pdf(open("demo/tenant_a/test.pdf", "rb"))
+
+
+    chunks = chunk_pages(parsed, chunk_size=50, overlap=10)
+
+    for chunk in chunks:
+        print(f"Page: {chunk['page_number']}, Chunk Index: {chunk['chunk_index']}, Text: {chunk['text']}...")
