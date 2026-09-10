@@ -1,82 +1,112 @@
-from pathlib import Path
-from .parser import extract_text_from_pdf
-from .chunker import chunk_pages
-from .embeddings import create_embeddings, embed_query
-from .retriever import store_chunks, search_chunks
-from .generator import generate_answer
-
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+import re
 
 
-def ingest_pdf(pdf_path: str, tenant_id: str = "tenant_a"):
+PATTERNS = {
+    "instruction_override": {
+        "score": 0.40,
+        "patterns": [
+            r"\bignore\s+(all\s+)?previous\s+instructions\b",
+            r"\bdisregard\s+(all\s+)?previous\s+instructions\b",
+            r"\bforget\s+(all\s+)?previous\s+instructions\b",
+            r"\boverride\s+(all\s+)?previous\s+instructions\b",
+        ]
+    },
 
-    pdf_path = Path(pdf_path)
-    print(f"[1/4] Parsing PDF: {pdf_path.name}")
+    "system_prompt_extraction": {
+        "score": 0.40,
+        "patterns": [
+            r"\breveal\s+(the\s+)?system\s+prompt\b",
+            r"\bshow\s+(the\s+)?system\s+prompt\b",
+            r"\bprint\s+(the\s+)?system\s+prompt\b",
+            r"\bexpose\s+(the\s+)?system\s+prompt\b",
+        ]
+    },
 
-    with open(pdf_path, "rb") as f:
-        pages = extract_text_from_pdf(f)
+    "security_bypass": {
+        "score": 0.30,
+        "patterns": [
+            r"\bbypass\s+(the\s+)?security\b",
+            r"\bbypass\s+(the\s+)?security\s+controls\b",
+            r"\bdisable\s+(the\s+)?security\b",
+            r"\bdisable\s+(the\s+)?safety\b",
+        ]
+    },
 
-    print(f"      Extracted {len(pages)} pages")
+    "confidential_data_extraction": {
+        "score": 0.40,
+        "patterns": [
+            r"\breveal\s+confidential\s+(information|data)\b",
+            r"\bdisclose\s+confidential\s+(information|data)\b",
+            r"\bexpose\s+confidential\s+(information|data)\b",
+            r"\breveal\s+private\s+(information|data)\b",
+        ]
+    }
+}
 
-  
-    print("[2/4] Chunking text...")
-    chunks = []
+
+THRESHOLD = 0.70
+
+
+def scan_text(text):
+    threats = []
+
+    for threat_type, config in PATTERNS.items():
+
+        for pattern in config["patterns"]:
+
+            match = re.search(
+                pattern,
+                text,
+                re.IGNORECASE
+            )
+
+            if match:
+                threats.append({
+                    "threat_type": threat_type,
+                    "score": config["score"],
+                    "matched_text": match.group(0)
+                })
+
+                break
+
+    return threats
+
+
+def scan_document(pages):
+
+    detected_threats = []
+
     for page in pages:
-        page_chunks = chunk_pages([page])
-        for c in page_chunks:
-            chunks.append({
-                "text": c,
-                "page": page["page_number"],
-                "source": pdf_path.name,
-                "tenant_id": tenant_id,
+
+        page_threats = scan_text(page["text"])
+
+        for threat in page_threats:
+            detected_threats.append({
+                "page_number": page["page_number"],
+                "threat_type": threat["threat_type"],
+                "score": threat["score"],
+                "matched_text": threat["matched_text"]
             })
 
-    print(f"      Created {len(chunks)} chunks")
+    threat_score = sum(
+        threat["score"]
+        for threat in detected_threats
+    )
 
-    # [3] Embed
-    print("[3/4] Generating embeddings...")
-    chunks = create_embeddings(chunks)
+    threat_score = min(threat_score, 1.0)
 
-    # [4] Store
-    print("[4/4] Storing in vector DB...")
-    store_chunks(chunks, tenant_id=tenant_id)
+    if threat_score >= THRESHOLD:
 
-    print(f"✅ Ingested {len(chunks)} chunks from {pdf_path.name}")
-    return len(chunks)
-
-
-def query(question: str, tenant_id: str = "tenant_a", top_k: int = 5):
-
-    print(f"[1/3] Embedding question: {question}")
-    q_vec = embed_query(question)
-
-    print(f"[2/3] Retrieving top {top_k} chunks...")
-    results = search_chunks(q_vec, tenant_id=tenant_id, top_k=top_k)
-
-    if not results:
-        return {"answer": "No relevant documents found.", "sources": []}
-
-    print(f"[3/3] Generating answer...")
-    context = "\n\n".join([r["text"] for r in results])
-    answer = generate_answer(question, context)
+        return {
+            "safe": False,
+            "status": "quarantined",
+            "threat_score": threat_score,
+            "threats": detected_threats
+        }
 
     return {
-        "answer": answer,
-        "sources": [
-            {"source": r["source"], "page": r["page"]}
-            for r in results
-        ],
+        "safe": True,
+        "status": "safe",
+        "threat_score": threat_score,
+        "threats": detected_threats
     }
-
-
-
-if __name__ == "__main__":
-    pdf = PROJECT_ROOT / "demo" / "tenant_a" / "test.pdf"
-
-    # 1. Ingest
-    ingest_pdf(pdf, tenant_id="tenant_a")
-
-    # 2. Ask a question
-    result = query("What is this document about?", tenant_id="tenant_a")
-    print("\n💬 Answer:", result["answer"])
-    print("📚 Sources:", result["sources"])

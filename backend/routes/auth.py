@@ -21,6 +21,7 @@ def login():
         res = supabase.auth.sign_in_with_password({
             "email": email,
             "password": password
+            "role" : role
         })
         return jsonify({
             "message": "Login successful",
