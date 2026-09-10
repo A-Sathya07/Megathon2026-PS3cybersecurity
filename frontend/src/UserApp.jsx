@@ -376,8 +376,11 @@ function DocumentDetails({ doc, onClose }) {
 // ---------------------------------------------------------------------------
 
 function UploadModal({ onClose }) {
-  const [stage, setStage] = useState("idle"); // idle -> scanning -> result
+  const [stage, setStage] = useState("idle");
   const [result, setResult] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState("");
 
   const checks = [
     { label: "Hash Verification", icon: Fingerprint },
@@ -386,90 +389,212 @@ function UploadModal({ onClose }) {
     { label: "Anomaly Detection", icon: Eye },
   ];
 
-  const runScan = (outcome) => {
-    setStage("scanning");
-    setTimeout(() => {
-      setResult(outcome);
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+
+    if (!file) return;
+
+    const allowedTypes = ["application/pdf", "text/plain"];
+
+    const extension = file.name.split(".").pop().toLowerCase();
+
+    if (!["pdf", "docx", "txt"].includes(extension)) {
+      setError("Only PDF, DOCX and TXT files are allowed.");
+      setSelectedFile(null);
+      return;
+    }
+
+    setError("");
+    setSelectedFile(file);
+  };
+
+  const uploadFile = async () => {
+    if (!selectedFile) {
+      setError("Please select a document first.");
+      return;
+    }
+
+    try {
+      setUploading(true);
+      setError("");
+      setStage("scanning");
+
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+
+      const response = await fetch(
+        "http://127.0.0.1:5000/api/documents/upload",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Upload failed");
+      }
+
+      console.log("Upload successful:", data);
+
+      setResult("safe");
       setStage("result");
-    }, 1200);
+    } catch (error) {
+      console.error("Upload error:", error);
+
+      setResult("threat");
+      setStage("result");
+      setError(error.message || "Unable to upload document.");
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-slate-900 bg-opacity-40" onClick={onClose}>
-      <div className="bg-white rounded-xl shadow-lg w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-slate-900 bg-opacity-40"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-xl shadow-lg w-full max-w-md"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-          <h3 className="text-sm font-semibold text-slate-900">Upload your document</h3>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
+          <h3 className="text-sm font-semibold text-slate-900">
+            Upload your document
+          </h3>
+
+          <button
+            onClick={onClose}
+            className="text-slate-400 hover:text-slate-600"
+          >
             <X size={18} />
           </button>
         </div>
 
         <div className="p-5 space-y-4">
+
           {stage === "idle" && (
             <>
-              <div className="border-2 border-dashed border-slate-200 rounded-lg py-8 flex flex-col items-center justify-center text-center">
+              <input
+                id="document-upload"
+                type="file"
+                accept=".pdf,.docx,.txt"
+                className="hidden"
+                onChange={handleFileChange}
+              />
+
+              <label
+                htmlFor="document-upload"
+                className="border-2 border-dashed border-slate-200 rounded-lg py-8 px-4 flex flex-col items-center justify-center text-center cursor-pointer hover:border-blue-300 hover:bg-blue-50 transition"
+              >
                 <Upload size={22} className="text-slate-400 mb-2" />
-                <p className="text-sm text-slate-600">Drag a file here, or click to browse</p>
-                <p className="text-xs text-slate-400 mt-1">Supported: PDF, DOCX, TXT</p>
-              </div>
-              <p className="text-xs font-medium text-slate-500">Security process</p>
+
+                <p className="text-sm text-slate-600">
+                  {selectedFile
+                    ? selectedFile.name
+                    : "Click to select a document"}
+                </p>
+
+                <p className="text-xs text-slate-400 mt-1">
+                  Supported: PDF, DOCX, TXT
+                </p>
+              </label>
+
+              {error && (
+                <p className="text-xs text-red-600">
+                  {error}
+                </p>
+              )}
+
+              {selectedFile && (
+                <div className="flex items-center gap-2 rounded-lg bg-slate-50 border border-slate-200 p-3">
+                  <FileText
+                    size={16}
+                    className="text-blue-600 flex-shrink-0"
+                  />
+
+                  <div className="min-w-0">
+                    <p className="text-sm text-slate-700 truncate">
+                      {selectedFile.name}
+                    </p>
+
+                    <p className="text-xs text-slate-400">
+                      {(selectedFile.size / 1024).toFixed(1)} KB
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              <p className="text-xs font-medium text-slate-500">
+                Security process
+              </p>
+
               <div className="grid grid-cols-2 gap-2">
                 {checks.map((c) => (
-                  <div key={c.label} className="flex items-center gap-2 text-xs text-slate-600 border border-slate-100 rounded-md px-2.5 py-2">
-                    <c.icon size={14} className="text-slate-400" />
+                  <div
+                    key={c.label}
+                    className="flex items-center gap-2 text-xs text-slate-600 border border-slate-100 rounded-md px-2.5 py-2"
+                  >
+                    <c.icon
+                      size={14}
+                      className="text-slate-400"
+                    />
+
                     {c.label}
                   </div>
                 ))}
               </div>
-              <div className="flex gap-2 pt-1">
-                <button
-                  onClick={() => runScan("safe")}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg py-2.5"
-                >
-                  Simulate safe upload
-                </button>
-                <button
-                  onClick={() => runScan("threat")}
-                  className="flex-1 border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-medium rounded-lg py-2.5"
-                >
-                  Simulate threat
-                </button>
-              </div>
+
+              <button
+                onClick={uploadFile}
+                disabled={!selectedFile || uploading}
+                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg py-2.5"
+              >
+                {uploading ? "Uploading..." : "Upload Document"}
+              </button>
             </>
           )}
 
           {stage === "scanning" && (
             <div className="py-10 flex flex-col items-center justify-center text-center">
               <div className="w-10 h-10 border-2 border-blue-200 border-t-blue-600 rounded-full animate-spin mb-4" />
-              <p className="text-sm font-medium text-slate-700">Document Status: Scanning&hellip;</p>
-              <p className="text-xs text-slate-400 mt-1">Running hash, provenance and injection checks</p>
+
+              <p className="text-sm font-medium text-slate-700">
+                Document Status: Uploading...
+              </p>
+
+              <p className="text-xs text-slate-400 mt-1">
+                Sending document securely to RAGShield
+              </p>
             </div>
           )}
 
           {stage === "result" && result === "safe" && (
             <div className="rounded-lg border border-green-200 bg-green-50 p-4">
               <div className="flex items-center gap-2 text-sm font-semibold text-green-700">
-                <CheckCircle2 size={16} /> Document Safe
+                <CheckCircle2 size={16} />
+                Document Uploaded Successfully
               </div>
-              <dl className="mt-3 space-y-1.5 text-xs">
-                <div className="flex justify-between"><dt className="text-slate-500">SHA-256</dt><dd className="text-slate-800 font-mono">a84f&hellip;91c2</dd></div>
-                <div className="flex justify-between"><dt className="text-slate-500">Injection Score</dt><dd className="text-slate-800">2%</dd></div>
-                <div className="flex justify-between"><dt className="text-slate-500">Provenance</dt><dd className="text-slate-800">Verified</dd></div>
-                <div className="flex justify-between"><dt className="text-slate-500">Stored in</dt><dd className="text-slate-800">Secure Vector Database</dd></div>
-              </dl>
+
+              <p className="text-xs text-slate-600 mt-2">
+                <strong>{selectedFile?.name}</strong> has been stored
+                securely in Supabase.
+              </p>
             </div>
           )}
 
           {stage === "result" && result === "threat" && (
             <div className="rounded-lg border border-red-200 bg-red-50 p-4">
               <div className="flex items-center gap-2 text-sm font-semibold text-red-700">
-                <AlertTriangle size={16} /> Threat Detected
+                <AlertTriangle size={16} />
+                Upload Failed
               </div>
-              <dl className="mt-3 space-y-1.5 text-xs">
-                <div className="flex justify-between"><dt className="text-slate-500">Reason</dt><dd className="text-slate-800">Prompt Injection Detected</dd></div>
-                <div className="flex justify-between"><dt className="text-slate-500">Injection Score</dt><dd className="text-red-700 font-medium">87%</dd></div>
-                <div className="flex justify-between"><dt className="text-slate-500">Action</dt><dd className="text-slate-800">Document Quarantined</dd></div>
-              </dl>
+
+              <p className="text-xs text-red-600 mt-2">
+                {error || "The document could not be uploaded."}
+              </p>
             </div>
           )}
 
@@ -481,12 +606,12 @@ function UploadModal({ onClose }) {
               Done
             </button>
           )}
+
         </div>
       </div>
     </div>
   );
 }
-
 // ---------------------------------------------------------------------------
 // RAG Assistant \u2014 ported to match the admin dashboard's assistant exactly:
 // dark header with a boxed bot icon, plain bubbles with a "Source:" line,
