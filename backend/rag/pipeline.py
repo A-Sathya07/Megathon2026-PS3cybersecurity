@@ -3,9 +3,9 @@ from pathlib import Path
 from .parser import extract_text_from_pdf
 from .chunker import chunk_pages
 from ..security.ingestion import scan_document
-from .embeddings import create_embeddings, embed_query
+from .embeddings import create_embeddings , embed_query
 from .retriever import store_chunks, search_chunks
-from .generator import generate_answer
+# from .generator import generate_answer
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]

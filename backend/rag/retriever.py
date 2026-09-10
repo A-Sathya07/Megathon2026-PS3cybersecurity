@@ -1,4 +1,4 @@
-from ..database.supabase import supabase
+from database.supabase import supabase
 
 
 def store_chunks(chunks, document_id, tenant_id):

@@ -17,13 +17,20 @@ def create_embeddings(chunks):
 
     return chunks
 
+def embed_query(query):
+    embedding = model.encode(
+        query,
+        normalize_embeddings=True
+    )
+
+    return embedding.tolist()
 
 if __name__ == "__main__":
 
     from parser import extract_text_from_pdf
     from chunker import chunk_pages
 
-    with open("demo/tenant_a/test.pdf", "rb") as f:
+    with open("demo/tenant_a/tenant_a_leave_policy.pdf", "rb") as f:
         pages = extract_text_from_pdf(f)
 
     chunks = chunk_pages(pages)
