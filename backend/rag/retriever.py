@@ -1,4 +1,4 @@
-from database.supabase import supabase
+from config import supabase
 
 
 def store_chunks(chunks, document_id, tenant_id):
@@ -24,6 +24,7 @@ def store_chunks(chunks, document_id, tenant_id):
 
 
 def search_chunks(query_embedding, tenant_id, top_k=5):
+
     response = (
         supabase
         .rpc(
@@ -37,4 +38,15 @@ def search_chunks(query_embedding, tenant_id, top_k=5):
         .execute()
     )
 
-    return response.data or []
+    chunks = response.data or []
+
+    print("\n========== VECTOR SEARCH ==========")
+    print("Tenant ID:", tenant_id)
+    print("Chunks found:", len(chunks))
+
+    for chunk in chunks:
+        print("Similarity:", chunk.get("similarity"))
+        print("Content:", chunk.get("content", "")[:200])
+        print("----------------------------------")
+
+    return chunks

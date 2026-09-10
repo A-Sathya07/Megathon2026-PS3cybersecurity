@@ -915,53 +915,129 @@ function UploadModal({ onClose }) {
 // ---------------------------------------------------------------------------
 
 function RAGChatPanel({ onClose }) {
-  const [messages, setMessages] = useState([
-    { role: "user", text: "What is the leave policy?" },
-    {
-      role: "ai",
-      text: RAG_RESPONSES["what is the leave policy?"].answer,
-      source: RAG_RESPONSES["what is the leave policy?"].source,
-    },
-  ]);
+  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
   const scrollRef = useRef(null);
 
   useEffect(() => {
-    if (scrollRef.current)
+    if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
   }, [messages]);
 
-  function respondTo(question) {
-    const key = question.trim().toLowerCase();
-    const found = RAG_RESPONSES[key];
-    if (key.includes("security") && key.includes("summar")) {
+  async function sendQuestion(question) {
+    const trimmedQuestion = question.trim();
+
+    if (!trimmedQuestion || loading) return;
+
+    const accessToken = sessionStorage.getItem("access_token");
+    const storedUser = sessionStorage.getItem("user");
+
+    if (!accessToken || !storedUser) {
       setMessages((m) => [
         ...m,
-        { role: "user", text: question },
-        { role: "ai", blocked: true },
+        {
+          role: "ai",
+          text: "Your session has expired. Please login again.",
+        },
       ]);
       return;
     }
+
+    let user;
+
+    try {
+      user = JSON.parse(storedUser);
+    } catch {
+      setMessages((m) => [
+        ...m,
+        {
+          role: "ai",
+          text: "Invalid user session. Please login again.",
+        },
+      ]);
+      return;
+    }
+
     setMessages((m) => [
       ...m,
-      { role: "user", text: question },
-      found
-        ? {
-            role: "ai",
-            text: found.answer,
-            source: found.source,
-          }
-        : {
-            role: "ai",
-            text: "I couldn't find relevant information.",
-          },
+      {
+        role: "user",
+        text: trimmedQuestion,
+      },
     ]);
+
+    setInput("");
+    setLoading(true);
+
+    try {
+      const response = await fetch("http://localhost:5000/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          user_id: user.id,
+          company: user.company,
+          question: trimmedQuestion,
+        }),
+      });
+
+      const data = await response.json();
+
+      console.log("CHAT RESPONSE:", data);
+
+      if (!response.ok) {
+        setMessages((m) => [
+          ...m,
+          {
+            role: "ai",
+            blocked: response.status === 403,
+            text:
+              data.error || data.message || "Unable to process your question.",
+          },
+        ]);
+        return;
+      }
+
+      if (data.blocked) {
+        setMessages((m) => [
+          ...m,
+          {
+            role: "ai",
+            blocked: true,
+          },
+        ]);
+        return;
+      }
+
+      setMessages((m) => [
+        ...m,
+        {
+          role: "ai",
+          text: data.answer || "I couldn't find relevant information.",
+          source: data.source || null,
+        },
+      ]);
+    } catch (error) {
+      console.error("CHAT FETCH ERROR:", error);
+
+      setMessages((m) => [
+        ...m,
+        {
+          role: "ai",
+          text: `Backend connection error: ${error.message}`,
+        },
+      ]);
+    } finally {
+      setLoading(false);
+    }
   }
 
   function handleSend() {
-    if (!input.trim()) return;
-    respondTo(input.trim());
-    setInput("");
+    sendQuestion(input);
   }
 
   return (
@@ -976,12 +1052,15 @@ function RAGChatPanel({ onClose }) {
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
           <Bot className="h-4 w-4 text-white" />
         </div>
+
         <div className="flex-1">
           <p className="text-sm font-semibold text-white">RAG Assistant</p>
+
           <p className="text-[11px] text-slate-400">
             Ask about your trusted documents
           </p>
         </div>
+
         <button
           onClick={onClose}
           className="rounded-md p-1 text-slate-400 hover:bg-slate-800 hover:text-white"
@@ -1004,13 +1083,16 @@ function RAGChatPanel({ onClose }) {
               </div>
             );
           }
+
           if (m.blocked) {
             return (
               <div key={i} className="flex justify-start">
                 <div className="max-w-[85%] rounded-lg rounded-bl-sm border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
                   <p className="flex items-center gap-1 font-medium">
-                    <ShieldAlert className="h-3.5 w-3.5" /> Response Blocked
+                    <ShieldAlert className="h-3.5 w-3.5" />
+                    Response Blocked
                   </p>
+
                   <p className="mt-1 text-xs text-red-600">
                     RAGShield detected potentially malicious instructions in the
                     retrieved content. Your data remains protected.
@@ -1019,12 +1101,14 @@ function RAGChatPanel({ onClose }) {
               </div>
             );
           }
+
           return (
             <div key={i} className="flex justify-start">
               <div className="max-w-[85%] space-y-1.5">
                 <div className="rounded-lg rounded-bl-sm bg-slate-100 px-3 py-2 text-sm text-slate-700">
                   {m.text}
                 </div>
+
                 {m.source && (
                   <p className="flex items-center gap-1 pl-1 text-[11px] text-slate-400">
                     <FileText className="h-3 w-3" />
@@ -1036,16 +1120,25 @@ function RAGChatPanel({ onClose }) {
           );
         })}
 
-        {messages.length <= 2 && (
+        {loading && (
+          <div className="flex justify-start">
+            <div className="rounded-lg rounded-bl-sm bg-slate-100 px-3 py-2 text-sm text-slate-500">
+              Searching your documents...
+            </div>
+          </div>
+        )}
+
+        {messages.length === 0 && !loading && (
           <div className="pt-1">
             <p className="mb-1.5 text-[11px] font-medium text-slate-400">
               Suggested Questions
             </p>
+
             <div className="flex flex-wrap gap-1.5">
               {SUGGESTED_QUESTIONS.map((q) => (
                 <button
                   key={q}
-                  onClick={() => respondTo(q)}
+                  onClick={() => sendQuestion(q)}
                   className="rounded-full border border-slate-200 px-2.5 py-1 text-[11px] font-medium text-slate-600 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
                 >
                   {q}
@@ -1061,17 +1154,25 @@ function RAGChatPanel({ onClose }) {
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSend()}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                handleSend();
+              }
+            }}
             placeholder="Ask something..."
-            className="flex-1 bg-transparent text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none"
+            disabled={loading}
+            className="flex-1 bg-transparent text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none disabled:opacity-50"
           />
+
           <button
             onClick={handleSend}
-            className="flex h-7 w-7 items-center justify-center rounded-md bg-blue-600 text-white hover:bg-blue-700"
+            disabled={loading || !input.trim()}
+            className="flex h-7 w-7 items-center justify-center rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:bg-slate-300"
           >
             <Send className="h-3.5 w-3.5" />
           </button>
         </div>
+
         <p className="mt-2 text-center text-[10px] leading-snug text-slate-400">
           Responses are scanned for security and grounded in your documents.
         </p>
