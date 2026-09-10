@@ -1,7 +1,7 @@
 from pathlib import Path
 from .parser import extract_text_from_pdf
 from .chunker import chunk_pages
-from .embeddings import embed_texts, embed_query
+from .embeddings import create_embeddings, embed_query
 from .retriever import store_chunks, search_chunks
 from .generator import generate_answer
 
@@ -35,11 +35,7 @@ def ingest_pdf(pdf_path: str, tenant_id: str = "tenant_a"):
 
     # [3] Embed
     print("[3/4] Generating embeddings...")
-    texts = [c["text"] for c in chunks]
-    vectors = embed_texts(texts)
-
-    for chunk, vec in zip(chunks, vectors):
-        chunk["embedding"] = vec
+    chunks = create_embeddings(chunks)
 
     # [4] Store
     print("[4/4] Storing in vector DB...")
@@ -49,7 +45,6 @@ def ingest_pdf(pdf_path: str, tenant_id: str = "tenant_a"):
     return len(chunks)
 
 
--
 def query(question: str, tenant_id: str = "tenant_a", top_k: int = 5):
 
     print(f"[1/3] Embedding question: {question}")
@@ -74,7 +69,7 @@ def query(question: str, tenant_id: str = "tenant_a", top_k: int = 5):
     }
 
 
-# ---------- CLI TEST ----------
+
 if __name__ == "__main__":
     pdf = PROJECT_ROOT / "demo" / "tenant_a" / "test.pdf"
 
