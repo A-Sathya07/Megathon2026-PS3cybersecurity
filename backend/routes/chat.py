@@ -1,7 +1,6 @@
 from flask import Blueprint, request, jsonify
-
-from ..database.queries import get_user_by_id
-from ..rag.embeddings import embed_query
+from database.queries import get_user_by_id
+from rag.embeddings import embed_query
 from ..rag.retriever import search_chunks
 from ..rag.generator import generate_answer
 

@@ -1,5 +1,4 @@
-from ..config import supabase
-
+from config import supabase
 
 def get_user_by_id(user_id):
     response = (
