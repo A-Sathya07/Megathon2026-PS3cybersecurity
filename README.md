@@ -136,20 +136,68 @@ Generated responses are scanned before being returned to the frontend. If sensit
 ## Project Structure
 
 ```text
-RAGShield/
-├── frontend/
+RAG_Shield/
+│
+├── attack-scenarios/
+│   ├── cross-tenant.md
+│   ├── malicious-output.md
+│   └── poisoned_rag.pdf
+│
 ├── backend/
-│   ├── routes/
-│   ├── security/
-│   ├── rag/
+│   │
 │   ├── database/
+│   │   ├── __pycache__/
+│   │   ├── queries.py
+│   │   └── upload.py
+│   │
+│   ├── rag/
+│   │   ├── __pycache__/
+│   │   ├── chunker.py
+│   │   ├── embeddings.py
+│   │   ├── generator.py
+│   │   ├── parser.py
+│   │   ├── pipeline.py
+│   │   └── retriever.py
+│   │
+│   ├── routes/
+│   │   ├── __pycache__/
+│   │   ├── auth.py
+│   │   ├── chat.py
+│   │   └── documents.py
+│   │
+│   ├── security/
+│   │   ├── __pycache__/
+│   │   ├── ingestion.py
+│   │   └── output.py
+│   │
+│   ├── utils/
+│   │
+│   ├── .env
 │   ├── app.py
 │   ├── config.py
 │   └── requirements.txt
-├── demo/
-├── attack-scenarios/
-├── database/
-│   └── schema.sql
+│
+│
+├── frontend/
+│   ├── node_modules/
+│   ├── src/
+│   │   ├── AdminApp.jsx
+│   │   ├── App.jsx
+│   │   ├── index.css
+│   │   ├── LoginPage.jsx
+│   │   ├── main.jsx
+│   │   └── UserApp.jsx
+│   │
+│   ├── index.html
+│   ├── package.json
+│   ├── package-lock.json
+│   ├── postcss.config.js
+│   ├── tailwind.config.js
+│   └── vite.config.js
+│
+├── .gitignore
+├── package.json
+├── package-lock.json
 └── README.md
 ```
 
